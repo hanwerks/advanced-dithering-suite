@@ -1,1 +1,1 @@
-# advance-dithering-suite
+# advanced-dithering-suite
