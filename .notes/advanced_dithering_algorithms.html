@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Dithering Tool - Complete Implementation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .image-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-section {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .section-title {
+            color: #a855f7;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group h3 {
+            margin-bottom: 12px;
+            color: #fbbf24;
+            font-size: 1.1rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: block;
+            padding: 10px 16px;
+            background: linear-gradient(45deg, #059669, #10b981);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .file-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 13px;
+        }
+
+        select option {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .algorithm-description {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            font-style: italic;
+            min-height: 40px;
+        }
+
+        .parameter-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .parameter-control input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 5px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+
+        .parameter-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fbbf24;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .parameter-control input[type="number"] {
+            width: 70px;
+            padding: 4px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 12px;
+        }
+
+        .range-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .process-btn {
+            background: linear-gradient(45deg, #7c3aed, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .process-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .download-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .images-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .image-box {
+            text-align: center;
+        }
+
+        .image-box h3 {
+            margin-bottom: 15px;
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+
+        .image-container {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container img, .image-container canvas {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+
+        .image-container.zoomed {
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .image-container.zoomed.dragging {
+            cursor: grabbing;
+        }
+
+        .image-container.zoomed img, .image-container.zoomed canvas {
+            cursor: inherit;
+            transform: scale(2);
+            transition: transform 0.3s ease;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container:hover .zoom-controls {
+            opacity: 1;
+        }
+
+        .zoom-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .zoom-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .live-processing-indicator {
+            text-align: center;
+            padding: 8px 12px;
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .processing-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fbbf24;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-panel {
+                position: static;
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .images-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .parameter-control {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 5px;
+            }
+            
+            .parameter-control input[type="number"] {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Advanced Dithering Tool</h1>
+            <p>Professional-grade dithering with 16+ advanced algorithms</p>
+        </div>
+
+        <div class="main-content">
+            <div class="controls-panel">
+                <div class="control-section">
+                    <div class="section-title">📁 Image Input</div>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="imageInput" class="file-input" accept="image/*">
+                        <label for="imageInput" class="file-label">
+                            Choose Source Image
+                        </label>
+                    </div>
+                    <div class="live-processing-indicator" id="liveIndicator">
+                        ✨ Live Processing Active
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <div class="section-title">🎨 Algorithm Selection</div>
+                    
+                    <div class="control-group">
+                        <h3>Algorithm Category</h3>
+                        <select id="algorithmCategory">
+                            <option value="error-diffusion">Error Diffusion</option>
+                            <option value="ordered">Ordered Dithering</option>
+                            <option value="specialized">Specialized Techniques</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <h3>Specific Algorithm</h3>
+                        <select id="specificAlgorithm">
+                            <!-- Will be populated based on category -->
+                        </select>
+                        <div id="algorithmDescription" class="algorithm-description">
+                            Select an algorithm to see description
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <div class="section-title">⚙️ Algorithm Parameters</div>
+                    
+                    <div class="control-group">
+                        <div class="range-label">
+                            <span>Dithering Strength</span>
+                        </div>
+                        <div class="parameter-control">
+                            <input type="range" id="ditheringStrength" min="0.1" max="3.0" step="0.1" value="1.0">
+                            <input type="number" id="ditheringStrengthInput" min="0.1" max="3.0" step="0.1" value="1.0">
+                        </div>
+                    </div>
+
+                    <div id="advancedParameters" class="control-group">
+                        <!-- Algorithm-specific parameters will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <div class="section-title">🎭 Color Palette</div>
+                    
+                    <div class="control-group">
+                        <h3>Palette Type</h3>
+                        <select id="colorPalette">
+                            <option value="monochrome">Monochrome (B&W)</option>
+                            <option value="grayscale-4">4-Level Grayscale</option>
+                            <option value="gameboy">Game Boy Green</option>
+                            <option value="sepia">Sepia Tones</option>
+                            <option value="cga">CGA (4 colors)</option>
+                            <option value="custom-8">8 Colors</option>
+                            <option value="custom-16">16 Colors</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="downloadBtn" class="download-btn" disabled>
+                    💾 Download Result
+                </button>
+            </div>
+
+            <div class="image-section">
+                <div class="status" id="status">
+                    Load an image to begin live advanced dithering
+                </div>
+
+                <div class="images-container">
+                    <div class="image-box">
+                        <h3>Original Image</h3>
+                        <div class="image-container" id="originalContainer">
+                            <div class="placeholder">Upload an image to get started</div>
+                            <div class="zoom-controls">
+                                <button class="zoom-btn" id="originalZoomIn">🔍+</button>
+                                <button class="zoom-btn" id="originalZoomOut">🔍-</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="image-box">
+                        <h3>Dithered Result</h3>
+                        <div class="image-container" id="resultContainer">
+                            <div class="placeholder">Processed image will appear here</div>
+                            <div class="zoom-controls">
+                                <button class="zoom-btn" id="resultZoomIn">🔍+</button>
+                                <button class="zoom-btn" id="resultZoomOut">🔍-</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdvancedDitheringTool {
+            constructor() {
+                this.originalImage = null;
+                this.originalCanvas = null;
+                this.resultCanvas = null;
+                this.algorithms = this.getAlgorithmDefinitions();
+                this.processingTimeout = null;
+                this.isProcessing = false;
+                this.setupEventListeners();
+                this.initializeAlgorithmSelector();
+                this.setupImagePanning();
+            }
+
+            getAlgorithmDefinitions() {
+                return {
+                    'error-diffusion': {
+                        'floyd-steinberg': {
+                            name: 'Floyd-Steinberg',
+                            description: 'Classic error diffusion with excellent quality',
+                            kernel: [
+                                [0, 0, 7],
+                                [3, 5, 1]
+                            ],
+                            divisor: 16,
+                            parameters: {}
+                        },
+                        'jarvis-judice-ninke': {
+                            name: 'Jarvis-Judice-Ninke',
+                            description: 'Large 5×3 kernel for smooth gradients and superior quality',
+                            kernel: [
+                                [0, 0, 0, 7, 5],
+                                [3, 5, 7, 5, 3],
+                                [1, 3, 5, 3, 1]
+                            ],
+                            divisor: 48,
+                            parameters: {}
+                        },
+                        'stevenson-arce': {
+                            name: 'Stevenson-Arce',
+                            description: 'Optimized for color accuracy and smooth transitions',
+                            kernel: [
+                                [0, 0, 0, 0, 0, 32, 0],
+                                [12, 0, 26, 30, 16, 0, 0],
+                                [0, 12, 26, 12, 0, 0, 0],
+                                [5, 12, 12, 5, 0, 0, 0]
+                            ],
+                            divisor: 200,
+                            parameters: {}
+                        },
+                        'fan': {
+                            name: 'Fan Dithering',
+                            description: 'Speed-optimized algorithm with good quality balance',
+                            kernel: [
+                                [0, 0, 0, 7],
+                                [1, 3, 5, 0]
+                            ],
+                            divisor: 16,
+                            parameters: {}
+                        },
+                        'two-row-sierra': {
+                            name: 'Two-Row Sierra',
+                            description: 'Memory efficient processing with reduced artifacts',
+                            kernel: [
+                                [0, 0, 0, 4, 3],
+                                [1, 2, 3, 2, 1]
+                            ],
+                            divisor: 16,
+                            parameters: {}
+                        },
+                        'atkinson': {
+                            name: 'Atkinson',
+                            description: 'Apple\'s algorithm with unique aesthetic qualities',
+                            kernel: [
+                                [0, 0, 1, 1],
+                                [1, 1, 1, 0],
+                                [0, 1, 0, 0]
+                            ],
+                            divisor: 8,
+                            parameters: {}
+                        }
+                    },
+                    'ordered': {
+                        'bayer-4x4': {
+                            name: 'Bayer 4×4',
+                            description: 'Classic ordered dithering pattern',
+                            type: 'bayer',
+                            size: 4,
+                            parameters: {}
+                        },
+                        'bayer-8x8': {
+                            name: 'Large Bayer 8×8',
+                            description: 'Fine pattern details with higher resolution',
+                            type: 'bayer',
+                            size: 8,
+                            parameters: {}
+                        },
+                        'blue-noise': {
+                            name: 'Blue Noise',
+                            description: 'Natural, organic patterns that mimic film grain',
+                            type: 'blue-noise',
+                            parameters: {
+                                'frequency': { min: 0.1, max: 2.0, default: 1.0, label: 'Noise Frequency' },
+                                'amplitude': { min: 0.1, max: 2.0, default: 1.0, label: 'Pattern Amplitude' }
+                            }
+                        },
+                        'void-cluster': {
+                            name: 'Void-and-Cluster',
+                            description: 'Organic dot formation with natural clustering',
+                            type: 'void-cluster',
+                            parameters: {
+                                'cluster-size': { min: 2, max: 16, default: 8, label: 'Cluster Size' }
+                            }
+                        },
+                        'clustered-dot': {
+                            name: 'Clustered Dot',
+                            description: 'Traditional print halftones for vintage aesthetic',
+                            type: 'clustered',
+                            parameters: {
+                                'dot-size': { min: 2, max: 12, default: 6, label: 'Dot Size' }
+                            }
+                        }
+                    },
+                    'specialized': {
+                        'riemersma': {
+                            name: 'Riemersma Dithering',
+                            description: 'Space-filling curve patterns for unique aesthetics',
+                            type: 'riemersma',
+                            parameters: {
+                                'curve-order': { min: 2, max: 6, default: 4, label: 'Curve Complexity' }
+                            }
+                        },
+                        'threshold-modulation': {
+                            name: 'Threshold Modulation',
+                            description: 'Dynamic adaptive thresholds based on local content',
+                            type: 'threshold-mod',
+                            parameters: {
+                                'adaptation': { min: 0.1, max: 2.0, default: 1.0, label: 'Adaptation Strength' },
+                                'locality': { min: 1, max: 5, default: 3, label: 'Local Window Size' }
+                            }
+                        },
+                        'interleaved-gradient': {
+                            name: 'Interleaved Gradient',
+                            description: 'Multi-algorithm combination for complex patterns',
+                            type: 'interleaved',
+                            parameters: {
+                                'blend-ratio': { min: 0.0, max: 1.0, default: 0.5, label: 'Algorithm Blend Ratio' }
+                            }
+                        },
+                        'edge-aware': {
+                            name: 'Edge-Aware Hybrid',
+                            description: 'Content-adaptive processing preserving details',
+                            type: 'edge-aware',
+                            parameters: {
+                                'edge-threshold': { min: 10, max: 100, default: 50, label: 'Edge Detection Threshold' },
+                                'preservation': { min: 0.0, max: 1.0, default: 0.7, label: 'Detail Preservation' }
+                            }
+                        },
+                        'pattern-based': {
+                            name: 'Pattern-Based Hybrid',
+                            description: 'Combines multiple patterns for artistic effects',
+                            type: 'pattern-hybrid',
+                            parameters: {
+                                'pattern-mix': { min: 0.0, max: 1.0, default: 0.5, label: 'Pattern Mix Ratio' }
+                            }
+                        }
+                    }
+                };
+            }
+
+            setupEventListeners() {
+                document.getElementById('imageInput').addEventListener('change', (e) => this.loadImage(e));
+                document.getElementById('downloadBtn').addEventListener('click', () => this.downloadImage());
+                
+                // Live processing events
+                document.getElementById('algorithmCategory').addEventListener('change', () => {
+                    this.updateAlgorithmOptions();
+                    this.debouncedProcess();
+                });
+                document.getElementById('specificAlgorithm').addEventListener('change', () => {
+                    this.updateAlgorithmDescription();
+                    this.debouncedProcess();
+                });
+                document.getElementById('colorPalette').addEventListener('change', () => this.debouncedProcess());
+                
+                // Parameter sync with live processing
+                this.setupParameterSync();
+                
+                // Zoom controls
+                this.setupZoomControls();
+            }
+
+            setupParameterSync() {
+                const strengthSlider = document.getElementById('ditheringStrength');
+                const strengthInput = document.getElementById('ditheringStrengthInput');
+
+                strengthSlider.addEventListener('input', (e) => {
+                    strengthInput.value = e.target.value;
+                    this.debouncedProcess();
+                });
+
+                strengthInput.addEventListener('input', (e) => {
+                    strengthSlider.value = e.target.value;
+                    this.debouncedProcess();
+                });
+            }
+
+            debouncedProcess() {
+                if (!this.originalCanvas) return;
+                
+                // Clear existing timeout
+                if (this.processingTimeout) {
+                    clearTimeout(this.processingTimeout);
+                }
+                
+                // Show processing indicator
+                this.updateStatus('⚡ Processing changes...');
+                
+                // Debounce processing by 300ms
+                this.processingTimeout = setTimeout(() => {
+                    this.processImage();
+                }, 300);
+            }
+
+            initializeAlgorithmSelector() {
+                this.updateAlgorithmOptions();
+            }
+
+            updateAlgorithmOptions() {
+                const category = document.getElementById('algorithmCategory').value;
+                const specificSelect = document.getElementById('specificAlgorithm');
+                const algorithms = this.algorithms[category];
+
+                specificSelect.innerHTML = '';
+                
+                Object.keys(algorithms).forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = algorithms[key].name;
+                    specificSelect.appendChild(option);
+                });
+
+                this.updateAlgorithmDescription();
+                this.updateAdvancedParameters();
+            }
+
+            updateAlgorithmDescription() {
+                const category = document.getElementById('algorithmCategory').value;
+                const algorithm = document.getElementById('specificAlgorithm').value;
+                
+                if (!algorithm) return;
+                
+                const algoData = this.algorithms[category][algorithm];
+                document.getElementById('algorithmDescription').textContent = algoData.description;
+                
+                this.updateAdvancedParameters();
+            }
+
+            updateAdvancedParameters() {
+                const category = document.getElementById('algorithmCategory').value;
+                const algorithm = document.getElementById('specificAlgorithm').value;
+                const container = document.getElementById('advancedParameters');
+                
+                container.innerHTML = '';
+                
+                if (!algorithm) return;
+                
+                const algoData = this.algorithms[category][algorithm];
+                const parameters = algoData.parameters || {};
+
+                Object.keys(parameters).forEach(paramKey => {
+                    const param = parameters[paramKey];
+                    
+                    const group = document.createElement('div');
+                    group.innerHTML = `
+                        <div class="range-label">
+                            <span>${param.label}</span>
+                        </div>
+                        <div class="parameter-control">
+                            <input type="range" id="${paramKey}" min="${param.min}" max="${param.max}" step="${param.step || 0.1}" value="${param.default}">
+                            <input type="number" id="${paramKey}Input" min="${param.min}" max="${param.max}" step="${param.step || 0.1}" value="${param.default}">
+                        </div>
+                    `;
+                    
+                    container.appendChild(group);
+                    
+                    // Setup sync and live processing for this parameter
+                    const slider = document.getElementById(paramKey);
+                    const input = document.getElementById(paramKey + 'Input');
+                    
+                    slider.addEventListener('input', (e) => {
+                        input.value = e.target.value;
+                        this.debouncedProcess();
+                    });
+                    
+                    input.addEventListener('input', (e) => {
+                        slider.value = e.target.value;
+                        this.debouncedProcess();
+                    });
+                });
+            }
+
+            setupZoomControls() {
+                const containers = ['original', 'result'];
+                
+                containers.forEach(containerType => {
+                    const zoomInBtn = document.getElementById(`${containerType}ZoomIn`);
+                    const zoomOutBtn = document.getElementById(`${containerType}ZoomOut`);
+                    const container = document.getElementById(`${containerType}Container`);
+                    
+                    zoomInBtn.addEventListener('click', () => {
+                        container.classList.add('zoomed');
+                    });
+                    
+                    zoomOutBtn.addEventListener('click', () => {
+                        container.classList.remove('zoomed');
+                        this.resetTransform(container);
+                    });
+                    
+                    container.addEventListener('click', (e) => {
+                        if (e.target.tagName === 'IMG' || e.target.tagName === 'CANVAS') {
+                            if (container.classList.contains('zoomed')) {
+                                container.classList.remove('zoomed');
+                                this.resetTransform(container);
+                            } else {
+                                container.classList.add('zoomed');
+                            }
+                        }
+                    });
+                });
+            }
+
+            setupImagePanning() {
+                const containers = ['originalContainer', 'resultContainer'];
+
+                containers.forEach(containerId => {
+                    const container = document.getElementById(containerId);
+                    let isDragging = false;
+                    let dragStart = { x: 0, y: 0 };
+                    let currentTransform = { x: 0, y: 0 };
+
+                    container.addEventListener('mousedown', (e) => {
+                        if (container.classList.contains('zoomed')) {
+                            const target = e.target;
+                            if (target.tagName === 'IMG' || target.tagName === 'CANVAS') {
+                                isDragging = true;
+                                container.classList.add('dragging');
+                                dragStart = {
+                                    x: e.clientX - currentTransform.x,
+                                    y: e.clientY - currentTransform.y
+                                };
+                                e.preventDefault();
+                            }
+                        }
+                    });
+
+                    document.addEventListener('mousemove', (e) => {
+                        if (isDragging && container.classList.contains('zoomed')) {
+                            currentTransform.x = e.clientX - dragStart.x;
+                            currentTransform.y = e.clientY - dragStart.y;
+                            
+                            const img = container.querySelector('img, canvas');
+                            if (img) {
+                                img.style.transform = `scale(2) translate(${currentTransform.x/2}px, ${currentTransform.y/2}px)`;
+                            }
+                        }
+                    });
+
+                    document.addEventListener('mouseup', () => {
+                        if (isDragging) {
+                            isDragging = false;
+                            container.classList.remove('dragging');
+                        }
+                    });
+
+                    container.resetTransform = () => {
+                        currentTransform = { x: 0, y: 0 };
+                        const img = container.querySelector('img, canvas');
+                        if (img) {
+                            img.style.transform = 'scale(1)';
+                        }
+                    };
+                });
+            }
+
+            resetTransform(container) {
+                if (container.resetTransform) {
+                    container.resetTransform();
+                }
+            }
+
+            loadImage(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.originalImage = img;
+                        this.displayOriginalImage();
+                        this.updateStatus(`✅ Loaded: ${file.name} (${img.width}×${img.height})`);
+                        
+                        // Auto-process the image with current settings
+                        setTimeout(() => this.processImage(), 100);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            displayOriginalImage() {
+                const container = document.getElementById('originalContainer');
+                container.innerHTML = '';
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const maxSize = 600;
+                const scale = Math.min(maxSize / this.originalImage.width, maxSize / this.originalImage.height);
+                canvas.width = this.originalImage.width * scale;
+                canvas.height = this.originalImage.height * scale;
+                
+                ctx.drawImage(this.originalImage, 0, 0, canvas.width, canvas.height);
+                this.originalCanvas = canvas;
+                container.appendChild(canvas);
+                
+                const zoomControls = document.createElement('div');
+                zoomControls.className = 'zoom-controls';
+                zoomControls.innerHTML = `
+                    <button class="zoom-btn" id="originalZoomIn">🔍+</button>
+                    <button class="zoom-btn" id="originalZoomOut">🔍-</button>
+                `;
+                container.appendChild(zoomControls);
+                
+                this.setupZoomControls();
+            }
+
+            async processImage() {
+                if (!this.originalCanvas || this.isProcessing) return;
+
+                this.isProcessing = true;
+                this.updateStatus('🔄 Processing with advanced algorithm...');
+
+                try {
+                    const category = document.getElementById('algorithmCategory').value;
+                    const algorithm = document.getElementById('specificAlgorithm').value;
+                    const strength = parseFloat(document.getElementById('ditheringStrength').value);
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = this.originalCanvas.width;
+                    canvas.height = this.originalCanvas.height;
+
+                    ctx.drawImage(this.originalCanvas, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                    // Apply selected algorithm
+                    await this.applyDitheringAlgorithm(imageData, category, algorithm, strength);
+                    
+                    // Apply color palette
+                    this.applyColorPalette(imageData);
+
+                    ctx.putImageData(imageData, 0, 0);
+                    this.displayResult(canvas);
+                    
+                    this.updateStatus(`✨ Live processed with ${this.algorithms[category][algorithm].name}`);
+                    document.getElementById('downloadBtn').disabled = false;
+                } catch (error) {
+                    this.updateStatus('❌ Error during processing: ' + error.message);
+                } finally {
+                    this.isProcessing = false;
+                }
+            }
+
+            async applyDitheringAlgorithm(imageData, category, algorithm, strength) {
+                const algoData = this.algorithms[category][algorithm];
+                
+                switch (category) {
+                    case 'error-diffusion':
+                        this.applyErrorDiffusion(imageData, algoData, strength);
+                        break;
+                    case 'ordered':
+                        this.applyOrderedDithering(imageData, algoData, strength);
+                        break;
+                    case 'specialized':
+                        this.applySpecializedDithering(imageData, algoData, strength);
+                        break;
+                }
+            }
+
+            applyErrorDiffusion(imageData, algoData, strength) {
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+                const kernel = algoData.kernel;
+                const divisor = algoData.divisor;
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        
+                        // Convert to grayscale
+                        const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+                        const newValue = gray < 128 ? 0 : 255;
+                        const error = (gray - newValue) * strength;
+                        
+                        // Set pixel
+                        data[idx] = data[idx + 1] = data[idx + 2] = newValue;
+                        
+                        // Distribute error using kernel
+                        for (let ky = 0; ky < kernel.length; ky++) {
+                            for (let kx = 0; kx < kernel[ky].length; kx++) {
+                                const weight = kernel[ky][kx];
+                                if (weight === 0) continue;
+                                
+                                const ny = y + ky;
+                                const nx = x + kx - Math.floor(kernel[ky].length / 2);
+                                
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                    const nidx = (ny * width + nx) * 4;
+                                    const errorAmount = (error * weight) / divisor;
+                                    
+                                    data[nidx] = Math.max(0, Math.min(255, data[nidx] + errorAmount));
+                                    data[nidx + 1] = Math.max(0, Math.min(255, data[nidx + 1] + errorAmount));
+                                    data[nidx + 2] = Math.max(0, Math.min(255, data[nidx + 2] + errorAmount));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            applyOrderedDithering(imageData, algoData, strength) {
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+
+                let matrix;
+                switch (algoData.type) {
+                    case 'bayer':
+                        matrix = this.generateBayerMatrix(algoData.size);
+                        break;
+                    case 'blue-noise':
+                        matrix = this.generateBlueNoiseMatrix(8, this.getParameterValue('frequency', 1.0), this.getParameterValue('amplitude', 1.0));
+                        break;
+                    case 'void-cluster':
+                        matrix = this.generateVoidClusterMatrix(8, this.getParameterValue('cluster-size', 8));
+                        break;
+                    case 'clustered':
+                        matrix = this.generateClusteredDotMatrix(8, this.getParameterValue('dot-size', 6));
+                        break;
+                    default:
+                        matrix = this.generateBayerMatrix(4);
+                }
+
+                const matrixSize = matrix.length;
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+                        
+                        const threshold = (matrix[y % matrixSize][x % matrixSize] / (matrixSize * matrixSize)) * 255 * strength;
+                        const newValue = gray > threshold ? 255 : 0;
+                        
+                        data[idx] = data[idx + 1] = data[idx + 2] = newValue;
+                    }
+                }
+            }
+
+            applySpecializedDithering(imageData, algoData, strength) {
+                switch (algoData.type) {
+                    case 'riemersma':
+                        this.applyRiemersmaDithering(imageData, strength, this.getParameterValue('curve-order', 4));
+                        break;
+                    case 'threshold-mod':
+                        this.applyThresholdModulation(imageData, strength, this.getParameterValue('adaptation', 1.0), this.getParameterValue('locality', 3));
+                        break;
+                    case 'interleaved':
+                        this.applyInterleavedGradient(imageData, strength, this.getParameterValue('blend-ratio', 0.5));
+                        break;
+                    case 'edge-aware':
+                        this.applyEdgeAwareDithering(imageData, strength, this.getParameterValue('edge-threshold', 50), this.getParameterValue('preservation', 0.7));
+                        break;
+                    case 'pattern-hybrid':
+                        this.applyPatternBasedHybrid(imageData, strength, this.getParameterValue('pattern-mix', 0.5));
+                        break;
+                }
+            }
+
+            getParameterValue(paramName, defaultValue) {
+                const input = document.getElementById(paramName + 'Input') || document.getElementById(paramName);
+                return input ? parseFloat(input.value) : defaultValue;
+            }
+
+            // Advanced Algorithm Implementations
+
+            generateBayerMatrix(size) {
+                if (size === 2) {
+                    return [[0, 2], [3, 1]];
+                }
+                
+                const half = size / 2;
+                const smaller = this.generateBayerMatrix(half);
+                const matrix = Array(size).fill().map(() => Array(size).fill(0));
+                
+                for (let y = 0; y < half; y++) {
+                    for (let x = 0; x < half; x++) {
+                        const base = smaller[y][x] * 4;
+                        matrix[y][x] = base;
+                        matrix[y][x + half] = base + 2;
+                        matrix[y + half][x] = base + 3;
+                        matrix[y + half][x + half] = base + 1;
+                    }
+                }
+                return matrix;
+            }
+
+            generateBlueNoiseMatrix(size, frequency, amplitude) {
+                const matrix = Array(size).fill().map(() => Array(size).fill(0));
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        // Simple blue noise approximation using high-frequency random
+                        const noise1 = Math.random();
+                        const noise2 = Math.random();
+                        const blueNoise = Math.sin(x * frequency + noise1 * Math.PI) * Math.cos(y * frequency + noise2 * Math.PI);
+                        matrix[y][x] = Math.floor((blueNoise * amplitude + 1) * 0.5 * size * size);
+                    }
+                }
+                return matrix;
+            }
+
+            generateVoidClusterMatrix(size, clusterSize) {
+                const matrix = Array(size).fill().map(() => Array(size).fill(0));
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        const centerX = size / 2;
+                        const centerY = size / 2;
+                        const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+                        const clusterValue = Math.sin(distance * Math.PI / clusterSize) * 0.5 + 0.5;
+                        matrix[y][x] = Math.floor(clusterValue * size * size);
+                    }
+                }
+                return matrix;
+            }
+
+            generateClusteredDotMatrix(size, dotSize) {
+                const matrix = Array(size).fill().map(() => Array(size).fill(0));
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        const dx = x - size/2;
+                        const dy = y - size/2;
+                        const distance = Math.sqrt(dx*dx + dy*dy);
+                        matrix[y][x] = Math.floor((distance % dotSize) / dotSize * size * size);
+                    }
+                }
+                return matrix;
+            }
+
+            applyRiemersmaDithering(imageData, strength, curveOrder) {
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+                
+                const hilbertCurve = this.generateHilbertCurve(Math.min(width, height), curveOrder);
+                
+                for (let i = 0; i < hilbertCurve.length && i < width * height; i++) {
+                    const point = hilbertCurve[i];
+                    const x = Math.floor(point.x * width);
+                    const y = Math.floor(point.y * height);
+                    
+                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                        const idx = (y * width + x) * 4;
+                        const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+                        const threshold = 128 + (Math.sin(i * 0.1) * 50 * strength);
+                        const newValue = gray > threshold ? 255 : 0;
+                        
+                        data[idx] = data[idx + 1] = data[idx + 2] = newValue;
+                    }
+                }
+            }
+
+            applyThresholdModulation(imageData, strength, adaptation, locality) {
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+                        
+                        const localVariance = this.calculateLocalVariance(data, x, y, width, height, locality);
+                        const adaptiveThreshold = 128 + (localVariance - 0.5) * 100 * adaptation * strength;
+                        
+                        const newValue = gray > adaptiveThreshold ? 255 : 0;
+                        data[idx] = data[idx + 1] = data[idx + 2] = newValue;
+                    }
+                }
+            }
+
+            applyInterleavedGradient(imageData, strength, blendRatio) {
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+                        
+                        let newValue;
+                        if (Math.random() < blendRatio) {
+                            // Use ordered dithering
+                            const threshold = ((x % 4) * 4 + (y % 4)) * 16 * strength;
+                            newValue = gray > threshold ? 255 : 0;
+                        } else {
+                            // Use simple threshold with noise
+                            const noisyThreshold = 128 + (Math.random() - 0.5) * 50 * strength;
+                            newValue = gray > noisyThreshold ? 255 : 0;
+                        }
+                        
+                        data[idx] = data[idx + 1] = data[idx + 2] = newValue;
+                    }
+                }
+            }
+
+            applyEdgeAwareDithering(imageData, strength, edgeThreshold, preservation) {
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+
+                // First pass: detect edges
+                const edges = new Array(width * height).fill(0);
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const idx = (y * width + x) * 4;
+                        
+                        // Sobel edge detection
+                        const gx = -data[((y-1)*width+(x-1))*4] + data[((y-1)*width+(x+1))*4] +
+                                  -2*data[(y*width+(x-1))*4] + 2*data[(y*width+(x+1))*4] +
+                                  -data[((y+1)*width+(x-1))*4] + data[((y+1)*width+(x+1))*4];
+                        
+                        const gy = -data[((y-1)*width+(x-1))*4] - 2*data[((y-1)*width+x)*4] - data[((y-1)*width+(x+1))*4] +
+                                   data[((y+1)*width+(x-1))*4] + 2*data[((y+1)*width+x)*4] + data[((y+1)*width+(x+1))*4];
+                        
+                        edges[y * width + x] = Math.sqrt(gx*gx + gy*gy) > edgeThreshold ? 1 : 0;
+                    }
+                }
+
+                // Second pass: apply appropriate dithering
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+                        
+                        let newValue;
+                        if (edges[y * width + x]) {
+                            // Use simple threshold for edges to preserve detail
+                            const edgeThreshold = 128 + (gray - 128) * preservation;
+                            newValue = gray > edgeThreshold ? 255 : 0;
+                        } else {
+                            // Use ordered dithering for smooth areas
+                            const threshold = ((x % 4) * 4 + (y % 4)) * 16 * strength;
+                            newValue = gray > threshold ? 255 : 0;
+                        }
+                        
+                        data[idx] = data[idx + 1] = data[idx + 2] = newValue;
+                    }
+                }
+            }
+
+            applyPatternBasedHybrid(imageData, strength, patternMix) {
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+                        
+                        let threshold;
+                        if ((x + y) % 8 < 4 * patternMix) {
+                            // Bayer pattern
+                            threshold = ((x % 4) * 4 + (y % 4)) * 16;
+                        } else {
+                            // Blue noise approximation
+                            threshold = (Math.sin(x * 0.5) * Math.cos(y * 0.7) + 1) * 127.5;
+                        }
+                        
+                        threshold *= strength;
+                        const newValue = gray > threshold ? 255 : 0;
+                        data[idx] = data[idx + 1] = data[idx + 2] = newValue;
+                    }
+                }
+            }
+
+            generateHilbertCurve(size, order) {
+                const points = [];
+                const actualOrder = Math.min(order, Math.floor(Math.log2(size)));
+                
+                for (let i = 0; i < size * size; i++) {
+                    const point = this.hilbertIndexToPoint(i, actualOrder);
+                    points.push({ x: point.x / size, y: point.y / size });
+                }
+                return points;
+            }
+
+            hilbertIndexToPoint(index, order) {
+                let x = 0, y = 0;
+                let s = 1;
+                
+                for (let i = 0; i < order; i++) {
+                    const rx = 1 & (index >> 1);
+                    const ry = 1 & (index ^ rx);
+                    
+                    if (ry === 0) {
+                        if (rx === 1) {
+                            x = s - 1 - x;
+                            y = s - 1 - y;
+                        }
+                        [x, y] = [y, x];
+                    }
+                    
+                    x += s * rx;
+                    y += s * ry;
+                    index >>= 2;
+                    s *= 2;
+                }
+                
+                return { x, y };
+            }
+
+            calculateLocalVariance(data, x, y, width, height, windowSize) {
+                let sum = 0;
+                let count = 0;
+                const half = Math.floor(windowSize / 2);
+                
+                for (let dy = -half; dy <= half; dy++) {
+                    for (let dx = -half; dx <= half; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const idx = (ny * width + nx) * 4;
+                            const gray = data[idx] * 0.299 + data[idx + 1] * 0.587 + data[idx + 2] * 0.114;
+                            sum += gray;
+                            count++;
+                        }
+                    }
+                }
+                
+                return count > 0 ? (sum / count) / 255 : 0.5;
+            }
+
+            applyColorPalette(imageData) {
+                const paletteType = document.getElementById('colorPalette').value;
+                const palette = this.getColorPalette(paletteType);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    
+                    const closestColor = this.findClosestColor([r, g, b], palette);
+                    data[i] = closestColor[0];
+                    data[i + 1] = closestColor[1];
+                    data[i + 2] = closestColor[2];
+                }
+            }
+
+            getColorPalette(type) {
+                const palettes = {
+                    'monochrome': [[0, 0, 0], [255, 255, 255]],
+                    'grayscale-4': [[0, 0, 0], [85, 85, 85], [170, 170, 170], [255, 255, 255]],
+                    'gameboy': [[15, 56, 15], [48, 98, 48], [139, 172, 15], [155, 188, 15]],
+                    'sepia': [[44, 35, 26], [92, 70, 48], [162, 132, 94], [210, 180, 140]],
+                    'cga': [[0, 0, 0], [255, 0, 255], [0, 255, 255], [255, 255, 255]],
+                    'custom-8': [
+                        [0, 0, 0], [255, 255, 255], [255, 0, 0], [0, 255, 0],
+                        [0, 0, 255], [255, 255, 0], [255, 0, 255], [0, 255, 255]
+                    ],
+                    'custom-16': [
+                        [0, 0, 0], [128, 128, 128], [192, 192, 192], [255, 255, 255],
+                        [128, 0, 0], [255, 0, 0], [128, 128, 0], [255, 255, 0],
+                        [0, 128, 0], [0, 255, 0], [0, 128, 128], [0, 255, 255],
+                        [0, 0, 128], [0, 0, 255], [128, 0, 128], [255, 0, 255]
+                    ]
+                };
+                
+                return palettes[type] || palettes['monochrome'];
+            }
+
+            findClosestColor(targetColor, palette) {
+                let closestColor = palette[0];
+                let minDistance = this.colorDistance(targetColor, palette[0]);
+                
+                for (let i = 1; i < palette.length; i++) {
+                    const distance = this.colorDistance(targetColor, palette[i]);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestColor = palette[i];
+                    }
+                }
+                
+                return closestColor;
+            }
+
+            colorDistance(color1, color2) {
+                const rDiff = color1[0] - color2[0];
+                const gDiff = color1[1] - color2[1];
+                const bDiff = color1[2] - color2[2];
+                return Math.sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+            }
+
+            displayResult(canvas) {
+                const container = document.getElementById('resultContainer');
+                container.innerHTML = '';
+                container.appendChild(canvas);
+                this.resultCanvas = canvas;
+                
+                const zoomControls = document.createElement('div');
+                zoomControls.className = 'zoom-controls';
+                zoomControls.innerHTML = `
+                    <button class="zoom-btn" id="resultZoomIn">🔍+</button>
+                    <button class="zoom-btn" id="resultZoomOut">🔍-</button>
+                `;
+                container.appendChild(zoomControls);
+                
+                this.setupZoomControls();
+            }
+
+            downloadImage() {
+                if (!this.resultCanvas) return;
+                
+                const link = document.createElement('a');
+                link.download = 'advanced-dithered-image.png';
+                link.href = this.resultCanvas.toDataURL();
+                link.click();
+            }
+
+            updateStatus(message) {
+                document.getElementById('status').textContent = message;
+            }
+        }
+
+        // Initialize the tool
+        const ditheringTool = new AdvancedDitheringTool();
+    </script>
+</body>
+</html>

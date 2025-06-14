@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .palette-section {
+            margin-bottom: 30px;
+        }
+
+        .palette-section h3 {
+            margin-bottom: 15px;
+            color: #fbbf24;
+            font-size: 1.2rem;
+        }
+
+        select {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        select option {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .palette-preview {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .color-swatch:hover {
+            border-color: #fbbf24;
+            transform: scale(1.1);
+        }
+
+        .palette-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .palette-btn {
+            background: linear-gradient(45deg, #7c3aed, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .palette-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .color-editor-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .color-editor-content {
+            background: rgba(30, 58, 138, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            min-width: 400px;
+            max-width: 90vw;
+        }
+
+        .color-editor-content h3 {
+            color: #fbbf24;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .color-preview {
+            width: 100%;
+            height: 80px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .color-input-group {
+            margin-bottom: 20px;
+        }
+
+        .color-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .color-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .color-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 10px;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .color-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border: 2px solid #333;
+        }
+
+        .color-input {
+            width: 60px;
+            padding: 6px 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .color-picker-container {
+            margin-bottom: 20px;
+        }
+
+        .color-picker-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .color-picker-input {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .hex-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .color-editor-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .color-editor-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .color-editor-btn.save {
+            background: linear-gradient(45deg, #059669, #10b981);
+            color: white;
+        }
+
+        .color-editor-btn.cancel {
+            background: linear-gradient(45deg, #6b7280, #9ca3af);
+            color: white;
+        }
+
+        .color-editor-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .demo-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .demo-section h3 {
+            color: #a855f7;
+            margin-bottom: 15px;
+        }
+
+        .palette-output {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Color Palette Editor</h1>
+            <p>Test standalone color palette editing functionality</p>
+        </div>
+
+        <div class="palette-section">
+            <h3>Select Palette Type</h3>
+            <select id="paletteType">
+                <option value="monochrome">Monochrome (B&W)</option>
+                <option value="grayscale-4">4-Level Grayscale</option>
+                <option value="cga">CGA (4 colors)</option>
+                <option value="gameboy">Game Boy Green</option>
+                <option value="sepia">Sepia Tones</option>
+                <option value="custom-8">8 Colors</option>
+                <option value="custom-16">16 Colors</option>
+                <option value="custom">Custom Palette</option>
+            </select>
+
+            <div class="palette-preview" id="palettePreview"></div>
+
+            <div class="palette-controls" id="customControls" style="display: none;">
+                <button class="palette-btn" id="addColorBtn">+ Add Color</button>
+                <button class="palette-btn" id="removeColorBtn">- Remove</button>
+                <button class="palette-btn" id="resetPaletteBtn">Reset</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>Palette Data (JavaScript Array)</h3>
+            <div class="palette-output" id="paletteOutput"></div>
+        </div>
+    </div>
+
+    <!-- Color Editor Modal -->
+    <div id="colorEditorModal" class="color-editor-modal" style="display: none;">
+        <div class="color-editor-content">
+            <h3>Edit Color</h3>
+            
+            <div class="color-preview" id="colorPreview">
+                RGB(255, 255, 255)
+            </div>
+            
+            <div class="color-picker-container">
+                <label>Quick Color Picker:</label>
+                <div class="color-picker-row">
+                    <input type="color" id="colorPickerInput" class="color-picker-input" value="#ffffff">
+                    <input type="text" id="hexInput" class="hex-input" placeholder="#FFFFFF" value="#FFFFFF">
+                </div>
+            </div>
+            
+            <div class="color-input-group">
+                <label>Red (0-255):</label>
+                <div class="color-slider-container">
+                    <input type="range" id="redSlider" class="color-slider" min="0" max="255" value="255" style="background: linear-gradient(to right, #000, #f00);">
+                    <input type="number" id="redInput" class="color-input" min="0" max="255" value="255">
+                </div>
+            </div>
+            
+            <div class="color-input-group">
+                <label>Green (0-255):</label>
+                <div class="color-slider-container">
+                    <input type="range" id="greenSlider" class="color-slider" min="0" max="255" value="255" style="background: linear-gradient(to right, #000, #0f0);">
+                    <input type="number" id="greenInput" class="color-input" min="0" max="255" value="255">
+                </div>
+            </div>
+            
+            <div class="color-input-group">
+                <label>Blue (0-255):</label>
+                <div class="color-slider-container">
+                    <input type="range" id="blueSlider" class="color-slider" min="0" max="255" value="255" style="background: linear-gradient(to right, #000, #00f);">
+                    <input type="number" id="blueInput" class="color-input" min="0" max="255" value="255">
+                </div>
+            </div>
+            
+            <div class="color-editor-buttons">
+                <button id="saveColorBtn" class="color-editor-btn save">Save Color</button>
+                <button id="cancelColorBtn" class="color-editor-btn cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ColorPaletteEditor {
+            constructor() {
+                this.currentEditingColorIndex = -1;
+                this.currentEditingPaletteType = 'custom';
+                this.customPalette = [[0, 0, 0], [255, 255, 255]];
+                this.predefinedPalettes = this.getDefaultPredefinedPalettes();
+                this.setupEventListeners();
+                this.updatePalettePreview();
+            }
+
+            getDefaultPredefinedPalettes() {
+                return {
+                    'monochrome': [[0, 0, 0], [255, 255, 255]],
+                    'grayscale-4': [[0, 0, 0], [85, 85, 85], [170, 170, 170], [255, 255, 255]],
+                    'cga': [[0, 0, 0], [255, 0, 255], [0, 255, 255], [255, 255, 255]],
+                    'gameboy': [[15, 56, 15], [48, 98, 48], [139, 172, 15], [155, 188, 15]],
+                    'sepia': [[44, 35, 26], [92, 70, 48], [162, 132, 94], [210, 180, 140]],
+                    'custom-8': [
+                        [0, 0, 0], [255, 255, 255], [255, 0, 0], [0, 255, 0],
+                        [0, 0, 255], [255, 255, 0], [255, 0, 255], [0, 255, 255]
+                    ],
+                    'custom-16': [
+                        [0, 0, 0], [128, 128, 128], [192, 192, 192], [255, 255, 255],
+                        [128, 0, 0], [255, 0, 0], [128, 128, 0], [255, 255, 0],
+                        [0, 128, 0], [0, 255, 0], [0, 128, 128], [0, 255, 255],
+                        [0, 0, 128], [0, 0, 255], [128, 0, 128], [255, 0, 255]
+                    ]
+                };
+            }
+
+            setupEventListeners() {
+                // Palette type change
+                document.getElementById('paletteType').addEventListener('change', () => {
+                    this.toggleCustomControls();
+                    this.updatePalettePreview();
+                });
+
+                // Custom palette controls
+                document.getElementById('addColorBtn').addEventListener('click', () => this.addColorToPalette());
+                document.getElementById('removeColorBtn').addEventListener('click', () => this.removeColorFromPalette());
+                document.getElementById('resetPaletteBtn').addEventListener('click', () => this.resetCustomPalette());
+
+                // Color editor setup
+                this.setupColorEditor();
+            }
+
+            setupColorEditor() {
+                const modal = document.getElementById('colorEditorModal');
+                const saveBtn = document.getElementById('saveColorBtn');
+                const cancelBtn = document.getElementById('cancelColorBtn');
+                const colorPicker = document.getElementById('colorPickerInput');
+                const hexInput = document.getElementById('hexInput');
+                const redSlider = document.getElementById('redSlider');
+                const greenSlider = document.getElementById('greenSlider');
+                const blueSlider = document.getElementById('blueSlider');
+                const redInput = document.getElementById('redInput');
+                const greenInput = document.getElementById('greenInput');
+                const blueInput = document.getElementById('blueInput');
+                const preview = document.getElementById('colorPreview');
+
+                // Sync all color inputs
+                const syncColorInputs = () => {
+                    const r = parseInt(redSlider.value);
+                    const g = parseInt(greenSlider.value);
+                    const b = parseInt(blueSlider.value);
+                    
+                    redInput.value = r;
+                    greenInput.value = g;
+                    blueInput.value = b;
+                    
+                    const color = `rgb(${r}, ${g}, ${b})`;
+                    const hexColor = this.rgbToHex(r, g, b);
+                    
+                    preview.style.backgroundColor = color;
+                    preview.textContent = `RGB(${r}, ${g}, ${b})`;
+                    colorPicker.value = hexColor;
+                    hexInput.value = hexColor;
+                };
+
+                // RGB Sliders
+                redSlider.addEventListener('input', syncColorInputs);
+                greenSlider.addEventListener('input', syncColorInputs);
+                blueSlider.addEventListener('input', syncColorInputs);
+
+                // RGB Number Inputs
+                redInput.addEventListener('input', (e) => {
+                    redSlider.value = Math.max(0, Math.min(255, parseInt(e.target.value) || 0));
+                    syncColorInputs();
+                });
+                greenInput.addEventListener('input', (e) => {
+                    greenSlider.value = Math.max(0, Math.min(255, parseInt(e.target.value) || 0));
+                    syncColorInputs();
+                });
+                blueInput.addEventListener('input', (e) => {
+                    blueSlider.value = Math.max(0, Math.min(255, parseInt(e.target.value) || 0));
+                    syncColorInputs();
+                });
+
+                // HTML5 Color Picker
+                colorPicker.addEventListener('input', (e) => {
+                    const rgb = this.hexToRgb(e.target.value);
+                    if (rgb) {
+                        redSlider.value = rgb.r;
+                        greenSlider.value = rgb.g;
+                        blueSlider.value = rgb.b;
+                        syncColorInputs();
+                    }
+                });
+
+                // Hex Input
+                hexInput.addEventListener('input', (e) => {
+                    let hexValue = e.target.value.trim();
+                    if (!hexValue.startsWith('#')) {
+                        hexValue = '#' + hexValue;
+                    }
+                    if (hexValue.length === 7) {
+                        const rgb = this.hexToRgb(hexValue);
+                        if (rgb) {
+                            redSlider.value = rgb.r;
+                            greenSlider.value = rgb.g;
+                            blueSlider.value = rgb.b;
+                            colorPicker.value = hexValue;
+                            syncColorInputs();
+                        }
+                    }
+                });
+
+                // Save and Cancel
+                saveBtn.addEventListener('click', () => {
+                    if (this.currentEditingColorIndex >= 0) {
+                        const newColor = [
+                            parseInt(redSlider.value),
+                            parseInt(greenSlider.value),
+                            parseInt(blueSlider.value)
+                        ];
+                        
+                        if (this.currentEditingPaletteType === 'custom') {
+                            this.customPalette[this.currentEditingColorIndex] = newColor;
+                        } else {
+                            this.predefinedPalettes[this.currentEditingPaletteType][this.currentEditingColorIndex] = newColor;
+                        }
+                        
+                        this.updatePalettePreview();
+                        this.updatePaletteOutput();
+                    }
+                    modal.style.display = 'none';
+                });
+
+                cancelBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+
+                // Close modal when clicking outside
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+
+            toggleCustomControls() {
+                const paletteType = document.getElementById('paletteType').value;
+                const controls = document.getElementById('customControls');
+                controls.style.display = paletteType === 'custom' ? 'flex' : 'none';
+            }
+
+            addColorToPalette() {
+                if (this.customPalette.length < 32) {
+                    this.customPalette.push([128, 128, 128]);
+                    this.updatePalettePreview();
+                    this.updatePaletteOutput();
+                }
+            }
+
+            removeColorFromPalette() {
+                if (this.customPalette.length > 1) {
+                    this.customPalette.pop();
+                    this.updatePalettePreview();
+                    this.updatePaletteOutput();
+                }
+            }
+
+            resetCustomPalette() {
+                this.customPalette = [[0, 0, 0], [255, 255, 255]];
+                this.updatePalettePreview();
+                this.updatePaletteOutput();
+            }
+
+            updatePalettePreview() {
+                const palette = this.getCurrentPalette();
+                const paletteType = document.getElementById('paletteType').value;
+                const preview = document.getElementById('palettePreview');
+                preview.innerHTML = '';
+                
+                palette.forEach((color, index) => {
+                    const swatch = document.createElement('div');
+                    swatch.className = 'color-swatch';
+                    swatch.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                    swatch.textContent = `${color[0]}, ${color[1]}, ${color[2]}`;
+                    swatch.style.cursor = 'pointer';
+                    
+                    swatch.addEventListener('click', () => {
+                        this.openColorEditor(index, paletteType);
+                    });
+                    
+                    swatch.title = `Click to edit RGB(${color[0]}, ${color[1]}, ${color[2]})`;
+                    
+                    preview.appendChild(swatch);
+                });
+
+                this.updatePaletteOutput();
+            }
+
+            getCurrentPalette() {
+                const paletteType = document.getElementById('paletteType').value;
+                
+                if (paletteType === 'custom') {
+                    return this.customPalette;
+                } else {
+                    return this.predefinedPalettes[paletteType] || this.predefinedPalettes['monochrome'];
+                }
+            }
+
+            openColorEditor(colorIndex, paletteType = 'custom') {
+                this.currentEditingColorIndex = colorIndex;
+                this.currentEditingPaletteType = paletteType;
+                
+                let color;
+                if (paletteType === 'custom') {
+                    color = this.customPalette[colorIndex];
+                } else {
+                    color = this.predefinedPalettes[paletteType][colorIndex];
+                }
+                
+                const modal = document.getElementById('colorEditorModal');
+                const redSlider = document.getElementById('redSlider');
+                const greenSlider = document.getElementById('greenSlider');
+                const blueSlider = document.getElementById('blueSlider');
+                const redInput = document.getElementById('redInput');
+                const greenInput = document.getElementById('greenInput');
+                const blueInput = document.getElementById('blueInput');
+                const colorPicker = document.getElementById('colorPickerInput');
+                const hexInput = document.getElementById('hexInput');
+                const preview = document.getElementById('colorPreview');
+
+                // Set current color values
+                redSlider.value = color[0];
+                greenSlider.value = color[1];
+                blueSlider.value = color[2];
+                redInput.value = color[0];
+                greenInput.value = color[1];
+                blueInput.value = color[2];
+                
+                const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                const hexColor = this.rgbToHex(color[0], color[1], color[2]);
+                
+                preview.style.backgroundColor = rgbColor;
+                preview.textContent = `RGB(${color[0]}, ${color[1]}, ${color[2]})`;
+                colorPicker.value = hexColor;
+                hexInput.value = hexColor;
+
+                modal.style.display = 'flex';
+            }
+
+            updatePaletteOutput() {
+                const palette = this.getCurrentPalette();
+                const paletteType = document.getElementById('paletteType').value;
+                const output = document.getElementById('paletteOutput');
+                
+                const paletteArray = JSON.stringify(palette, null, 2);
+                output.textContent = `// ${paletteType} palette\nconst palette = ${paletteArray};`;
+            }
+
+            rgbToHex(r, g, b) {
+                return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+            }
+
+            hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            }
+        }
+
+        // Initialize the color palette editor
+        const paletteEditor = new ColorPaletteEditor();
+    </script>
+</body>
+</html>

@@ -9,9 +9,11 @@ import './ImageSection.css';
  */
 const ImageSection = () => {
   const { 
-    originalImage, 
+    originalImage,
+    originalImageData,
     processedImage, 
     noiseImage,
+    ditheringSettings,
     addDebugLog 
   } = useAppStore();
 
@@ -47,14 +49,20 @@ const ImageSection = () => {
           showInfoPanel={true}
         />
 
-        {/* Processed Result */}
+        {/* Live Processed Result */}
         <ImagePreview
-          image={processedImage}
-          title="Final Result"
+          image={null}
+          title="Dithered Result"
           onImageClick={(e, transform) => handleImageClick('Result', e, transform)}
           onImageLoad={(e) => handleImageLoad('Result', e)}
           showZoomControls={true}
           showInfoPanel={true}
+          isProcessingView={true}
+          processingSettings={ditheringSettings}
+          originalImageData={originalImageData}
+          onProcessingComplete={() => {
+            addDebugLog('Live processing completed', 'info');
+          }}
         />
       </div>
 

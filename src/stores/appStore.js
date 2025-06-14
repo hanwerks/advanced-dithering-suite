@@ -6,11 +6,12 @@ import { subscribeWithSelector } from 'zustand/middleware';
  * Manages global state for images, settings, processing, and UI
  */
 export const useAppStore = create(
-  subscribeWithSelector((set, get) => ({
+  subscribeWithSelector((set) => ({
     // =========================
     // IMAGE STATE
     // =========================
     originalImage: null,
+    originalImageData: null, // ImageData object for processing
     processedImage: null,
     noiseImage: null,
     imageHistory: [],
@@ -20,10 +21,12 @@ export const useAppStore = create(
     // PROCESSING SETTINGS
     // =========================
     ditheringSettings: {
+      category: 'error-diffusion',
       algorithm: 'floyd-steinberg',
       strength: 1.0,
-      matrix: null, // Custom error diffusion matrix
-      orderingMatrix: null, // For ordered dithering
+      parameters: {}, // Algorithm-specific parameters
+      palette: 'monochrome',
+      customPalettes: {}, // Store custom palette data keyed by palette name
     },
     
     posterizationSettings: {
@@ -100,6 +103,7 @@ export const useAppStore = create(
     
     // Image Actions
     setOriginalImage: (image) => set({ originalImage: image }),
+    setOriginalImageData: (imageData) => set({ originalImageData: imageData }),
     setProcessedImage: (image) => set({ processedImage: image }),
     setNoiseImage: (image) => set({ noiseImage: image }),
     
@@ -225,12 +229,14 @@ export const useAppStore = create(
     }),
     
     // Reset Actions
-    resetSettings: () => set(state => ({
+    resetSettings: () => set(() => ({
       ditheringSettings: {
+        category: 'error-diffusion',
         algorithm: 'floyd-steinberg',
         strength: 1.0,
-        matrix: null,
-        orderingMatrix: null,
+        parameters: {},
+        palette: 'monochrome',
+        customPalettes: {},
       },
       posterizationSettings: {
         mode: 'uniform',
@@ -259,6 +265,7 @@ export const useAppStore = create(
     
     resetAll: () => set({
       originalImage: null,
+      originalImageData: null,
       processedImage: null,
       noiseImage: null,
       imageHistory: [],

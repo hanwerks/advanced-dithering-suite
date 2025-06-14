@@ -38,7 +38,7 @@
 .title-main {
   font-size: 1.8rem;
   font-weight: 700;
-  background: var(--accent-gold-gradient);
+  background: var(--accent-primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -84,9 +84,10 @@
 
 /* Active state for debug button */
 .btn.active {
-  background: var(--accent-cyan) !important;
-  color: #000 !important;
+  background: var(--accent-primary) !important;
+  color: white !important;
   font-weight: bold;
+  box-shadow: var(--shadow-glow);
 }
 
 /* =========================
@@ -159,14 +160,14 @@
 ========================= */
 
 .app-title:focus-within {
-  outline: 2px solid var(--accent-cyan);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .title-main {
-    background: var(--accent-gold);
+    background: var(--accent-primary);
     -webkit-background-clip: unset;
     -webkit-text-fill-color: unset;
     background-clip: unset;

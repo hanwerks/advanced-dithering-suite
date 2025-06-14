@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useAppStore } from '@stores/appStore';
+import { processDithering } from '@algorithms';
 import './ImagePreview.css';
 
 /**
@@ -26,11 +27,18 @@ const ImagePreview = ({
   maxZoom = 3.0,
   minZoom = 1.0,
   zoomStep = 0.5,
+  // Live processing props
+  isProcessingView = false,
+  processingSettings = null,
+  originalImageData = null,
+  onProcessingComplete = null,
   ...props
 }) => {
   // Refs
   const containerRef = useRef(null);
   const imageRef = useRef(null);
+  const canvasRef = useRef(null);
+  // const processingCanvasRef = useRef(null);
   
   // Local state for transform management
   const [transform, setTransform] = useState({
@@ -42,8 +50,13 @@ const ImagePreview = ({
     dragStart: { x: 0, y: 0 }
   });
 
-  // Store access for debug logging
-  const { addDebugLog } = useAppStore();
+  // Processing state
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processedCanvas, setProcessedCanvas] = useState(null);
+  const [processingError, setProcessingError] = useState(null);
+
+  // Store access for debug logging and processing status
+  const { addDebugLog, setProcessingStatus } = useAppStore();
 
   // Reset transform when image changes (unless preserveTransforms is true)
   useEffect(() => {
@@ -51,6 +64,68 @@ const ImagePreview = ({
       handleReset();
     }
   }, [image, preserveTransforms]);
+
+  // Live processing effect
+  useEffect(() => {
+    if (isProcessingView && originalImageData && processingSettings) {
+      performLiveProcessing();
+    }
+  }, [isProcessingView, originalImageData, processingSettings]);
+
+  // Update canvas when processedCanvas changes
+  useEffect(() => {
+    if (processedCanvas && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(processedCanvas, 0, 0);
+    }
+  }, [processedCanvas]);
+
+  // Live processing function
+  const performLiveProcessing = useCallback(async () => {
+    if (!originalImageData || !processingSettings || isProcessing) return;
+
+    setIsProcessing(true);
+    setProcessingError(null);
+    setProcessingStatus('processing');
+    
+    try {
+      addDebugLog(`Live processing: ${processingSettings.algorithm} (${processingSettings.category})`, 'info');
+      
+      const processedImageData = await processDithering(
+        originalImageData,
+        processingSettings.category,
+        processingSettings.algorithm,
+        processingSettings.strength,
+        processingSettings.parameters,
+        processingSettings.palette,
+        processingSettings.customPalettes
+      );
+
+      // Create canvas with processed result
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = processedImageData.width;
+      canvas.height = processedImageData.height;
+      ctx.putImageData(processedImageData, 0, 0);
+      
+      setProcessedCanvas(canvas);
+      setProcessingStatus('idle');
+      
+      if (onProcessingComplete) {
+        onProcessingComplete(canvas, processedImageData);
+      }
+      
+      addDebugLog('Live processing completed successfully', 'info');
+    } catch (error) {
+      setProcessingError(error.message);
+      setProcessingStatus('error');
+      addDebugLog(`Processing error: ${error.message}`, 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [originalImageData, processingSettings, isProcessing, onProcessingComplete, addDebugLog, setProcessingStatus]);
 
   // Zoom control handlers
   const handleZoomIn = useCallback(() => {
@@ -264,22 +339,41 @@ const ImagePreview = ({
         onContextMenu={(e) => e.preventDefault()}
         {...props}
       >
-        {image ? (
+        {(image || processedCanvas) ? (
           <>
-            {/* Image Element */}
-            <img
-              ref={imageRef}
-              src={image}
-              alt={title}
-              className="preview-image"
-              style={{
-                transform: getTransformStyle(),
-                transformOrigin: 'center center',
-                transition: transform.isDragging ? 'none' : 'transform 0.3s ease'
-              }}
-              onLoad={handleImageLoad}
-              draggable={false}
-            />
+            {/* Render either processed canvas or original image */}
+            {isProcessingView && processedCanvas ? (
+              <canvas
+                ref={canvasRef}
+                className="preview-canvas"
+                style={{
+                  transform: getTransformStyle(),
+                  transformOrigin: 'center center',
+                  transition: transform.isDragging ? 'none' : 'transform 0.3s ease',
+                  maxWidth: '100%',
+                  maxHeight: '500px',
+                  cursor: transform.zoom > 1.0 ? (transform.isDragging ? 'grabbing' : 'grab') : 'zoom-in'
+                }}
+                width={processedCanvas.width}
+                height={processedCanvas.height}
+                onClick={handleImageClick}
+                draggable={false}
+              />
+            ) : image ? (
+              <img
+                ref={imageRef}
+                src={image}
+                alt={title}
+                className="preview-image"
+                style={{
+                  transform: getTransformStyle(),
+                  transformOrigin: 'center center',
+                  transition: transform.isDragging ? 'none' : 'transform 0.3s ease'
+                }}
+                onLoad={handleImageLoad}
+                draggable={false}
+              />
+            ) : null}
 
             {/* Zoom Controls Overlay */}
             {showZoomControls && (
@@ -319,17 +413,41 @@ const ImagePreview = ({
               </div>
             )}
 
+            {/* Processing Status */}
+            {isProcessingView && (
+              <div className="processing-status">
+                {isProcessing && (
+                  <div className="processing-indicator">
+                    <div className="spinner"></div>
+                    <span>Processing...</span>
+                  </div>
+                )}
+                {processingError && (
+                  <div className="processing-error">
+                    <span>❌ {processingError}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Info Panel */}
             {showInfoPanel && (
               <div className="info-panel">
                 <div>Zoom: <span className="zoom-level">{transform.zoom.toFixed(1)}x</span></div>
                 <div>Pan: <span className="pan-position">{Math.round(transform.panX)}, {Math.round(transform.panY)}</span></div>
+                {isProcessingView && processedCanvas && (
+                  <div>Size: <span className="canvas-size">{processedCanvas.width}×{processedCanvas.height}</span></div>
+                )}
               </div>
             )}
           </>
         ) : (
           <div className="placeholder">
-            {title === "Original" ? "Upload an image to get started" : "Image will appear here"}
+            {isProcessingView ? (
+              originalImageData ? "Adjusting settings will update the preview" : "Load an image to see processed results"
+            ) : (
+              title === "Original" ? "Upload an image to get started" : "Image will appear here"
+            )}
           </div>
         )}
       </div>
