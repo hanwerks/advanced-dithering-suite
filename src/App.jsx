@@ -1,40 +1,78 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react';
+import { useAppStore } from '@stores/appStore';
+import Header from '@components/Header/Header';
+import ImageSection from '@components/ImageSection/ImageSection';
+import ControlsPanel from '@components/ControlsPanel/ControlsPanel';
+import DebugConsole from '@components/DebugConsole/DebugConsole';
+import ProcessingOverlay from '@components/ProcessingOverlay/ProcessingOverlay';
+import './App.css';
 
+/**
+ * Main Application Component
+ * Orchestrates the entire Advanced Dithering Suite interface
+ */
 function App() {
-  const [message, setMessage] = useState('Welcome to Advanced Dithering Suite!')
+  const { 
+    ui,
+    processing,
+    addDebugLog,
+    setProcessingStatus 
+  } = useAppStore();
+
+  // Initialize application
+  useEffect(() => {
+    addDebugLog('Advanced Dithering Suite initialized', 'info');
+    setProcessingStatus('idle');
+  }, [addDebugLog, setProcessingStatus]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ctrl/Cmd + Z for undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        const { undo } = useAppStore.getState();
+        undo();
+        addDebugLog('Undo triggered via keyboard', 'debug');
+      }
+      
+      // Ctrl/Cmd + Shift + Z for redo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        const { redo } = useAppStore.getState();
+        redo();
+        addDebugLog('Redo triggered via keyboard', 'debug');
+      }
+      
+      // F12 for debug console toggle
+      if (e.key === 'F12') {
+        e.preventDefault();
+        const currentState = useAppStore.getState();
+        currentState.ui.showDebugConsole = !currentState.ui.showDebugConsole;
+        addDebugLog('Debug console toggled via F12', 'debug');
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [addDebugLog]);
 
   return (
-    <div style={{ 
-      padding: '20px', 
-      fontFamily: 'Arial, sans-serif',
-      background: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
-      minHeight: '100vh',
-      color: 'white'
-    }}>
-      <h1>🎨 Advanced Dithering Suite</h1>
-      <p>{message}</p>
+    <div className="app">
+      <Header />
       
-      <div style={{ marginTop: '20px' }}>
-        <h2>🚀 Next Steps:</h2>
-        <ol>
-          <li>Choose your conversation branch</li>
-          <li>Start developing your component</li>
-          <li>Use `npm run create:component ComponentName` to generate templates</li>
-          <li>Test with `npm run dev`</li>
-        </ol>
-      </div>
+      <main className="app-main">
+        <div className="app-layout">
+          <ControlsPanel />
+          <ImageSection />
+        </div>
+      </main>
 
-      <div style={{ marginTop: '20px' }}>
-        <h3>📋 Available Commands:</h3>
-        <ul>
-          <li><code>npm run dev</code> - Start development server</li>
-          <li><code>npm run create:component YourComponent</code> - Generate component</li>
-          <li><code>npm run setup:branches</code> - Create all conversation branches</li>
-          <li><code>npm run test</code> - Run tests</li>
-        </ul>
-      </div>
+      {/* Conditional overlays and modals */}
+      {processing.isProcessing && <ProcessingOverlay />}
+      {ui.showDebugConsole && <DebugConsole />}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

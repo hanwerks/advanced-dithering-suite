@@ -1,0 +1,316 @@
+/* =========================
+   MAIN APPLICATION STYLES
+========================= */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--primary-bg);
+  color: var(--text-primary);
+}
+
+.app-main {
+  flex: 1;
+  padding: var(--spacing-xl);
+  min-height: 0; /* Prevents flex item from growing beyond container */
+}
+
+.app-layout {
+  max-width: 1800px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: var(--spacing-2xl);
+  align-items: start;
+  height: 100%;
+}
+
+/* =========================
+   LAYOUT VARIANTS
+========================= */
+
+.app-layout.single-column {
+  grid-template-columns: 1fr;
+  max-width: 1200px;
+}
+
+.app-layout.full-width {
+  max-width: none;
+  padding: 0 var(--spacing-lg);
+}
+
+/* =========================
+   RESPONSIVE LAYOUT
+========================= */
+
+@media (max-width: 1200px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-main {
+    padding: var(--spacing-lg);
+  }
+  
+  .app-layout {
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .app-main {
+    padding: var(--spacing-md);
+  }
+  
+  .app-layout {
+    gap: var(--spacing-md);
+  }
+}
+
+/* =========================
+   LOADING STATES
+========================= */
+
+.app.loading {
+  position: relative;
+}
+
+.app.loading::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app.loading::after {
+  content: 'Loading Advanced Dithering Suite...';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  z-index: calc(var(--z-modal) + 1);
+}
+
+/* =========================
+   ERROR STATES
+========================= */
+
+.app-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: var(--spacing-2xl);
+}
+
+.app-error-icon {
+  font-size: 3rem;
+  color: var(--status-error);
+  margin-bottom: var(--spacing-lg);
+}
+
+.app-error-title {
+  font-size: 1.5rem;
+  color: var(--status-error);
+  margin-bottom: var(--spacing-md);
+}
+
+.app-error-message {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.app-error-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* =========================
+   KEYBOARD NAVIGATION
+========================= */
+
+.app:focus-within {
+  outline: none;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--accent-cyan);
+  color: #000;
+  padding: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 4px;
+  z-index: var(--z-tooltip);
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* =========================
+   THEME VARIANTS
+========================= */
+
+.app.theme-dark {
+  /* Default theme - already dark */
+}
+
+.app.theme-light {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  color: #1f2937;
+}
+
+.app.theme-high-contrast {
+  background: black;
+  color: white;
+}
+
+/* =========================
+   PRINT STYLES
+========================= */
+
+@media print {
+  .app {
+    background: white;
+    color: black;
+  }
+  
+  .app-main {
+    padding: 0;
+  }
+  
+  .app-layout {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+}
+
+/* =========================
+   PERFORMANCE OPTIMIZATIONS
+========================= */
+
+.app {
+  /* Enable hardware acceleration for smooth animations */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize scrolling on mobile */
+.app-main {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* =========================
+   ACCESSIBILITY ENHANCEMENTS
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .app * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .app {
+    background: black;
+    color: white;
+  }
+  
+  .surface {
+    background: black;
+    border: 1px solid white;
+  }
+}
+
+/* Focus indicators */
+.app *:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* =========================
+   DEVELOPMENT HELPERS
+========================= */
+
+.app.debug-mode {
+  /* Visual debugging helpers */
+}
+
+.app.debug-mode * {
+  outline: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.app.debug-mode .app-layout {
+  outline: 2px solid rgba(0, 255, 0, 0.3);
+}
+
+/* =========================
+   COMPONENT SPACING
+========================= */
+
+.app > * + * {
+  margin-top: var(--spacing-md);
+}
+
+.app-main > * + * {
+  margin-top: var(--spacing-lg);
+}
+
+/* =========================
+   MOBILE OPTIMIZATIONS
+========================= */
+
+@media (max-width: 768px) {
+  .app {
+    /* Optimize for mobile performance */
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* =========================
+   SAFE AREAS (for notched devices)
+========================= */
+
+@supports (padding: max(0px)) {
+  .app {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+  
+  .app-main {
+    padding-bottom: max(var(--spacing-xl), env(safe-area-inset-bottom));
+  }
+}

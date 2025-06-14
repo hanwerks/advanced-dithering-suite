@@ -1,0 +1,201 @@
+/* =========================
+   HEADER COMPONENT
+========================= */
+
+.app-header {
+  background: var(--surface-bg);
+  backdrop-filter: var(--blur-md);
+  border-bottom: 1px solid var(--surface-border);
+  padding: var(--spacing-md) var(--spacing-xl);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-elevated);
+}
+
+.header-content {
+  max-width: 1800px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+}
+
+/* =========================
+   TITLE SECTION
+========================= */
+
+.header-left {
+  flex: 1;
+}
+
+.app-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title-main {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: var(--accent-gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.title-subtitle {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+/* =========================
+   ACTIONS SECTION
+========================= */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.button-group {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.button-group .btn {
+  border-radius: var(--radius-sm);
+}
+
+.button-group .btn:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.button-group .btn:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Active state for debug button */
+.btn.active {
+  background: var(--accent-cyan) !important;
+  color: #000 !important;
+  font-weight: bold;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+  }
+
+  .app-title {
+    text-align: center;
+  }
+
+  .title-main {
+    font-size: 1.5rem;
+  }
+
+  .title-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .header-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .button-group {
+    order: 1;
+  }
+
+  .btn {
+    font-size: 0.8rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .button-group {
+    width: 100%;
+  }
+
+  .button-group .btn {
+    flex: 1;
+    border-radius: var(--radius-sm);
+  }
+
+  .button-group .btn:first-child,
+  .button-group .btn:last-child {
+    border-radius: var(--radius-sm);
+    border-left: none;
+  }
+}
+
+/* =========================
+   ACCESSIBILITY
+========================= */
+
+.app-title:focus-within {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-main {
+    background: var(--accent-gold);
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+    background-clip: unset;
+  }
+}
+
+/* =========================
+   PRINT STYLES
+========================= */
+
+@media print {
+  .app-header {
+    background: white;
+    border-bottom: 1px solid black;
+    position: static;
+  }
+
+  .title-main {
+    color: black;
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+  }
+
+  .title-subtitle {
+    color: #666;
+  }
+
+  .header-actions {
+    display: none;
+  }
+}
